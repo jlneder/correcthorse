@@ -80,22 +80,22 @@ static void print_usage(char *argv0)
             "                       if omitted, the default wordlist " WORDLIST_DIR "/" WORDLIST_DEFAULT " will be used.\n"
             "-c, --char <n>         passphrase must be at least <n> characters long (default: " STR(CHARS_MIN_DEFAULT) ")\n"
             "-w, --words <n>        passphrase must consist of at least <n> words (default: " STR(WORDS_MIN_DEFAULT) ")\n"
-            "-s, --sep <char>       use <char> as separator between words\n"
+            "-s, --sep <string>     use a random char from <string> as separator between words\n"
             "-u, --camelcase        capitalize first letter of each word\n"
            );
     #else
     fprintf(stderr, "available options: \n"
-            "-h         print this text and exit\n"
-            "-v         print version and exit\n"
-            "-i <word>  include <word> in passphrase\n"
-            "-l <list>  use wordlist <list>.\n"
-            "           must be either absolute path or path relative to " WORDLIST_DIR ".\n"
-            "           max. " STR(WLISTS_MAX) " wordlists can be specified;\n"
-            "           if omitted, the default wordlist " WORDLIST_DIR "/" WORDLIST_DEFAULT " will be used.\n"
-            "-c <n>     passphrase must be at least <n> characters long (default: " STR(CHARS_MIN_DEFAULT) ")\n"
-            "-w <n>     passphrase must consist of at least <n> words (default: " STR(WORDS_MIN_DEFAULT) ")\n"
-            "-s <char>  use <char> as separator between words\n"
-            "-u         capitalize first letter of each word\n"
+            "-h           print this text and exit\n"
+            "-v           print version and exit\n"
+            "-i <word>    include <word> in passphrase\n"
+            "-l <list>    use wordlist <list>.\n"
+            "             must be either absolute path or path relative to " WORDLIST_DIR ".\n"
+            "             max. " STR(WLISTS_MAX) " wordlists can be specified;\n"
+            "             if omitted, the default wordlist " WORDLIST_DIR "/" WORDLIST_DEFAULT " will be used.\n"
+            "-c <n>       passphrase must be at least <n> characters long (default: " STR(CHARS_MIN_DEFAULT) ")\n"
+            "-w <n>       passphrase must consist of at least <n> words (default: " STR(WORDS_MIN_DEFAULT) ")\n"
+            "-s <string>  use a random char from <string> as separator between words\n"
+            "-u           capitalize first letter of each word\n"
            );
 
     #endif
@@ -133,8 +133,9 @@ int main(int argc, char **argv)
     char *uwords[UWORDS_MAX];
     size_t i_uwords = 0, n_uwords = 0;
 
-    /* sep character between words, -1 -> none */
-    int sep = -1;
+    /* sep characters between words, NULL -> none */
+    char *sep = NULL;
+    int sep_len = 0;
     int camel = 0;
 
     /* for strtoul */
@@ -206,7 +207,8 @@ int main(int argc, char **argv)
                 break;
 
             case 's':
-                sep = *optarg;
+                sep = optarg;
+                sep_len = strlen(sep);
                 break;
 
             case 'u':
@@ -272,8 +274,8 @@ int main(int argc, char **argv)
 
         for (i = 0; i < n_words; ++i)
         {
-            if (i && sep != -1)
-                printf("%c", sep);
+            if (i && sep != NULL)
+                printf("%c", sep[rand_index(sep_len)]);
 
             printf("%s", words[out_idx[i]]);
         }
